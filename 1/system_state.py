@@ -1,16 +1,10 @@
-# -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'gui.ui'
-#
-# Created by: PyQt5 UI code generator 5.7
-#
-# WARNING! All changes made in this file will be lost!
-
+#!/usr/bin/python3
 from PyQt5 import QtCore, QtGui, QtWidgets
 import numpy
 
 matrix = numpy.matrix
 solve = numpy.linalg.solve
+
 
 class Ui_window_form(object):
     def setupUi(self, window_form):
@@ -41,9 +35,9 @@ class Ui_window_form(object):
         self.input_table.setRowCount(5)
         self.input_table.setColumnCount(5)
         self.input_table.setObjectName("input_table")
-        self.input_table.horizontalHeader().setDefaultSectionSize(30)
-        self.input_table.horizontalHeader().setMinimumSectionSize(30)
-        self.input_table.verticalHeader().setMinimumSectionSize(30)
+        self.input_table.horizontalHeader().setDefaultSectionSize(40)
+        self.input_table.horizontalHeader().setMinimumSectionSize(40)
+        self.input_table.verticalHeader().setMinimumSectionSize(40)
         self.verticalLayout.addWidget(self.input_table)
         self.run_button = QtWidgets.QPushButton(window_form)
         self.run_button.setObjectName("run_button")
@@ -60,11 +54,11 @@ class Ui_window_form(object):
         self.output_table.setColumnCount(5)
         self.output_table.setObjectName("output_table")
         self.output_table.horizontalHeader().setVisible(True)
-        self.output_table.horizontalHeader().setDefaultSectionSize(30)
-        self.output_table.horizontalHeader().setMinimumSectionSize(30)
+        self.output_table.horizontalHeader().setDefaultSectionSize(40)
+        self.output_table.horizontalHeader().setMinimumSectionSize(40)
         self.output_table.verticalHeader().setVisible(False)
-        self.output_table.verticalHeader().setDefaultSectionSize(30)
-        self.output_table.verticalHeader().setMinimumSectionSize(30)
+        self.output_table.verticalHeader().setDefaultSectionSize(40)
+        self.output_table.verticalHeader().setMinimumSectionSize(40)
         self.verticalLayout.addWidget(self.output_table)
         self.verticalLayout_2.addLayout(self.verticalLayout)
         self.gridLayout.addLayout(self.verticalLayout_2, 0, 0, 1, 1)
@@ -95,6 +89,7 @@ class Ui_window_form(object):
                     if i == j:
                         sum_intens = 0
                         for k in range(matrix_size):
+							# if k != i: // if you don't want to have self-connections
                             sum_intens += float(self.input_table.item(i, k).text())
                         coefficients[i, j] = -sum_intens
                     else:
@@ -103,7 +98,7 @@ class Ui_window_form(object):
                 coefficients[-1, i] = 1
             solution = solve(coefficients, values)
             for i in range(matrix_size):
-                self.output_table.setItem(0, i, QtWidgets.QTableWidgetItem(str(solution[i])))
+                self.output_table.setItem(0, i, QtWidgets.QTableWidgetItem('%.2f' % solution[i]))
         except numpy.linalg.LinAlgError:
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Information)
@@ -112,7 +107,7 @@ class Ui_window_form(object):
                                    "в каждое за конечное число шагов")
             msg.setWindowTitle("Недостаточно данных")
             msg.setStandardButtons(QtWidgets.QMessageBox.Cancel | QtWidgets.QMessageBox.Ok)
-            msg.exec()
+            msg.exec_()
 
     def output_table_zero(self):
         self.output_table.setItem(0, 0, QtWidgets.QTableWidgetItem('1'))
