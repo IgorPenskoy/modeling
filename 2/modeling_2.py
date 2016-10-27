@@ -11,6 +11,7 @@ import random
 import math
 from bitarray import bitarray
 
+
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
@@ -22,45 +23,6 @@ class Ui_Form(object):
         Form.setSizePolicy(sizePolicy)
         Form.setMinimumSize(QtCore.QSize(480, 465))
         Form.setMaximumSize(QtCore.QSize(480, 465))
-        # palette = QtGui.QPalette()
-        # brush = QtGui.QBrush(QtGui.QColor(173, 173, 173))
-        # brush.setStyle(QtCore.Qt.SolidPattern)
-        # palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Button, brush)
-        # brush = QtGui.QBrush(QtGui.QColor(31, 14, 33))
-        # brush.setStyle(QtCore.Qt.SolidPattern)
-        # palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Text, brush)
-        # brush = QtGui.QBrush(QtGui.QColor(173, 173, 173))
-        # brush.setStyle(QtCore.Qt.SolidPattern)
-        # palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Base, brush)
-        # brush = QtGui.QBrush(QtGui.QColor(173, 173, 173))
-        # brush.setStyle(QtCore.Qt.SolidPattern)
-        # palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Window, brush)
-        # brush = QtGui.QBrush(QtGui.QColor(173, 173, 173))
-        # brush.setStyle(QtCore.Qt.SolidPattern)
-        # palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Button, brush)
-        # brush = QtGui.QBrush(QtGui.QColor(31, 14, 33))
-        # brush.setStyle(QtCore.Qt.SolidPattern)
-        # palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Text, brush)
-        # brush = QtGui.QBrush(QtGui.QColor(173, 173, 173))
-        # brush.setStyle(QtCore.Qt.SolidPattern)
-        # palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Base, brush)
-        # brush = QtGui.QBrush(QtGui.QColor(173, 173, 173))
-        # brush.setStyle(QtCore.Qt.SolidPattern)
-        # palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Window, brush)
-        # brush = QtGui.QBrush(QtGui.QColor(173, 173, 173))
-        # brush.setStyle(QtCore.Qt.SolidPattern)
-        # palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Button, brush)
-        # brush = QtGui.QBrush(QtGui.QColor(123, 123, 123))
-        # brush.setStyle(QtCore.Qt.SolidPattern)
-        # palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Text, brush)
-        # brush = QtGui.QBrush(QtGui.QColor(173, 173, 173))
-        # brush.setStyle(QtCore.Qt.SolidPattern)
-        # palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Base, brush)
-        # brush = QtGui.QBrush(QtGui.QColor(173, 173, 173))
-        # brush.setStyle(QtCore.Qt.SolidPattern)
-        # palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Window, brush)
-        # Form.setPalette(palette)
-        # Form.setAutoFillBackground(False)
         Form.setStyleSheet("background-color: rgb(173, 173, 173);")
         self.algorithm_input_table = QtWidgets.QTableWidget(Form)
         self.algorithm_input_table.setGeometry(QtCore.QRect(10, 40, 185, 330))
@@ -234,7 +196,6 @@ class Ui_Form(object):
         self.manual_input_label.setSizePolicy(sizePolicy)
         self.manual_input_label.setAlignment(QtCore.Qt.AlignCenter)
         self.manual_input_label.setObjectName("manual_input_label")
-
         self.retranslateUi(Form)
         self.algorithm_button.clicked.connect(self.generate_and_estimate_algorithm)
         self.table_button.clicked.connect(self.generate_and_estimate_table)
@@ -255,7 +216,6 @@ class Ui_Form(object):
             result.append(random.randint(min_dec, max_dec))
         return result
 
-
     def estimate_sequence_bin(self, sequence):
         s = 0
         n = len(sequence)
@@ -268,11 +228,45 @@ class Ui_Form(object):
         p = math.erfc(s_obs / math.sqrt(2))
         return p, p > 0.01
 
-    def estimate_sequence_dec(self, sequence):
-        sequence_bin = bitarray()
+    def estimate_sequence_dec(self, sequence, min_dec, max_dec):
+        # sequence_bin = bitarray()
+        # for number in sequence:
+        #     sequence_bin.extend('{0:b}'.format(number))
+        # return self.estimate_sequence_bin(sequence_bin)
+        m = (max_dec + min_dec) / 2
+        d = (max_dec - min_dec) ** 2 / 12
+        sigm = math.sqrt(d)
+        n = len(sequence)
+        my_m = 0
         for number in sequence:
-            sequence_bin.extend('{0:b}'.format(number))
-        return self.estimate_sequence_bin(sequence_bin)
+            my_m += number
+        my_m /= n
+        my_d = 0
+        for number in sequence:
+            my_d += (number - my_m) ** 2
+        my_d /= n
+        my_sigm = math.sqrt(my_d)
+        if m == 0:
+            rand_m = 0
+        else:
+            rand_m = 1 - math.fabs(my_m - m) / m
+        if d == 0:
+            rand_d = 0
+        else:
+            rand_d = 1 - math.fabs(my_d - d) / d
+        count = 0
+        count_low = 0
+        count_high = 0
+        for number in sequence:
+            if number >= m - sigm and number <= m + sigm:
+                count += 1
+            if number >= min_dec and number <= m:
+                count_low += 1
+            if number >= m and number <= max_dec:
+                count_high += 1
+        rand_count = 1 - math.fabs((count / n) - 0.5774) / 0.5774
+        rand_low_high = 1 - abs(count_low - count_high) / n
+        return (rand_m + rand_d + rand_count + rand_low_high) / 4, rand_m > 0.5
 
     def generate_and_estimate_algorithm(self):
         one_digit_seq = self.random_sequence_dec(15, 1)
@@ -282,11 +276,11 @@ class Ui_Form(object):
             self.algorithm_input_table.setItem(i, 0, QtWidgets.QTableWidgetItem(str(one_digit_seq[i])))
             self.algorithm_input_table.setItem(i, 1, QtWidgets.QTableWidgetItem(str(two_digit_seq[i])))
             self.algorithm_input_table.setItem(i, 2, QtWidgets.QTableWidgetItem(str(three_digit_seq[i])))
-        p, rand = self.estimate_sequence_dec(one_digit_seq)
+        p, rand = self.estimate_sequence_dec(one_digit_seq, 0, 9)
         self.algorithm_estimate_table.setItem(0, 0, QtWidgets.QTableWidgetItem(str(round(p * 100, 2))))
-        p, rand = self.estimate_sequence_dec(two_digit_seq)
+        p, rand = self.estimate_sequence_dec(two_digit_seq, 10, 99)
         self.algorithm_estimate_table.setItem(0, 1, QtWidgets.QTableWidgetItem(str(round(p * 100, 2))))
-        p, rand = self.estimate_sequence_dec(three_digit_seq)
+        p, rand = self.estimate_sequence_dec(three_digit_seq, 100, 999)
         self.algorithm_estimate_table.setItem(0, 2, QtWidgets.QTableWidgetItem(str(round(p * 100, 2))))
 
     def generate_and_estimate_table(self):
@@ -321,11 +315,11 @@ class Ui_Form(object):
             self.table_input_table.setItem(i, 0, QtWidgets.QTableWidgetItem(str(one_digit_seq[i])))
             self.table_input_table.setItem(i, 1, QtWidgets.QTableWidgetItem(str(two_digit_seq[i])))
             self.table_input_table.setItem(i, 2, QtWidgets.QTableWidgetItem(str(three_digit_seq[i])))
-        p, rand = self.estimate_sequence_dec(one_digit_seq)
+        p, rand = self.estimate_sequence_dec(one_digit_seq, 0, 9)
         self.table_estimate_table.setItem(0, 0, QtWidgets.QTableWidgetItem(str(round(p * 100, 2))))
-        p, rand = self.estimate_sequence_dec(two_digit_seq)
+        p, rand = self.estimate_sequence_dec(two_digit_seq, 10, 99)
         self.table_estimate_table.setItem(0, 1, QtWidgets.QTableWidgetItem(str(round(p * 100, 2))))
-        p, rand = self.estimate_sequence_dec(three_digit_seq)
+        p, rand = self.estimate_sequence_dec(three_digit_seq, 100, 999)
         self.table_estimate_table.setItem(0, 2, QtWidgets.QTableWidgetItem(str(round(p * 100, 2))))
 
     def estimate_manual(self):
@@ -337,11 +331,10 @@ class Ui_Form(object):
             except Exception as e:
                 pass
         if len(sequence) != 0:
-            p, rand = self.estimate_sequence_dec(sequence)
+            p, rand = self.estimate_sequence_dec(sequence, min(sequence), max(sequence))
         else:
             p = 0
         self.manual_estimate_table.setItem(0, 0, QtWidgets.QTableWidgetItem(str(round(p * 100, 2))))
-
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
