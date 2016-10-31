@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'modeling_2.ui'
@@ -229,44 +230,44 @@ class Ui_Form(object):
         return p, p > 0.01
 
     def estimate_sequence_dec(self, sequence, min_dec, max_dec):
-        # sequence_bin = bitarray()
+        sequence_bin = bitarray()
+        for number in sequence:
+            sequence_bin.extend('{0:b}'.format(number))
+        return self.estimate_sequence_bin(sequence_bin)
+        # m = (max_dec + min_dec) / 2
+        # d = (max_dec - min_dec) ** 2 / 12
+        # sigm = math.sqrt(d)
+        # n = len(sequence)
+        # my_m = 0
         # for number in sequence:
-        #     sequence_bin.extend('{0:b}'.format(number))
-        # return self.estimate_sequence_bin(sequence_bin)
-        m = (max_dec + min_dec) / 2
-        d = (max_dec - min_dec) ** 2 / 12
-        sigm = math.sqrt(d)
-        n = len(sequence)
-        my_m = 0
-        for number in sequence:
-            my_m += number
-        my_m /= n
-        my_d = 0
-        for number in sequence:
-            my_d += (number - my_m) ** 2
-        my_d /= n
-        my_sigm = math.sqrt(my_d)
-        if m == 0:
-            rand_m = 0
-        else:
-            rand_m = 1 - math.fabs(my_m - m) / m
-        if d == 0:
-            rand_d = 0
-        else:
-            rand_d = 1 - math.fabs(my_d - d) / d
-        count = 0
-        count_low = 0
-        count_high = 0
-        for number in sequence:
-            if number >= m - sigm and number <= m + sigm:
-                count += 1
-            if number >= min_dec and number <= m:
-                count_low += 1
-            if number >= m and number <= max_dec:
-                count_high += 1
-        rand_count = 1 - math.fabs((count / n) - 0.5774) / 0.5774
-        rand_low_high = 1 - abs(count_low - count_high) / n
-        return (rand_m + rand_d + rand_count + rand_low_high) / 4, rand_m > 0.5
+        #     my_m += number
+        # my_m /= n
+        # my_d = 0
+        # for number in sequence:
+        #     my_d += (number - my_m) ** 2
+        # my_d /= n
+        # my_sigm = math.sqrt(my_d)
+        # if m == 0:
+        #     rand_m = 0
+        # else:
+        #     rand_m = 1 - math.fabs(my_m - m) / m
+        # if d == 0:
+        #     rand_d = 0
+        # else:
+        #     rand_d = 1 - math.fabs(my_d - d) / d
+        # count = 0
+        # count_low = 0
+        # count_high = 0
+        # for number in sequence:
+        #     if number >= m - sigm and number <= m + sigm:
+        #         count += 1
+        #     if number >= min_dec and number <= m:
+        #         count_low += 1
+        #     if number >= m and number <= max_dec:
+        #         count_high += 1
+        # rand_count = 1 - math.fabs((count / n) - 0.5774) / 0.5774
+        # rand_low_high = 1 - abs(count_low - count_high) / n
+        # return (rand_m + rand_d + rand_count + rand_low_high) / 4, rand_m > 0.5
 
     def generate_and_estimate_algorithm(self):
         one_digit_seq = self.random_sequence_dec(15, 1)
@@ -331,7 +332,7 @@ class Ui_Form(object):
             except Exception as e:
                 pass
         if len(sequence) != 0:
-            p, rand = self.estimate_sequence_dec(sequence, min(sequence), max(sequence))
+            p, rand = self.estimate_sequence_dec(sequence, 0, 9)
         else:
             p = 0
         self.manual_estimate_table.setItem(0, 0, QtWidgets.QTableWidgetItem(str(round(p * 100, 2))))
